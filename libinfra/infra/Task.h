@@ -1,14 +1,16 @@
 #ifndef __TASK_H__
 #define __TASK_H__
-#include <global.h>
 
-typedef struct TaskNode_t {
+#include <stdint.h>
+#include <global.h>
+#include <Object.h>
+
+typedef struct TaskElement_t {
 	uint32_t id;
 	Task task;
-	struct TaskNode_t* next;
-} TaskNode;
+} TaskElement;
 
-class Task {
+class Task: Object {
 public:
 	virtual int run() = 0;
 }

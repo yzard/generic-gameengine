@@ -12,7 +12,7 @@ The thread pool is using POSIX thread libraries,
 if want use other threads, modify ThreadPool.h and ThreadPool.cpp
 */
 
-class ThreadPool {
+class ThreadPool: Object {
 public:
 	ThreadPool(uint32_t numOfThread = DEFAULT_NUM_THREADS);
 	~ThreadPool();
