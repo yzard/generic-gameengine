@@ -1,5 +1,1 @@
-bin_PROGRAMS =		\
-test
-
-test_SOURCES =		\
-test.cpp
+SUBDIRS = function unit
