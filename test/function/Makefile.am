@@ -1,5 +1,8 @@
 bin_PROGRAMS =			\
-test
+queue_test
 
-test_SOURCES =			\
-test.cpp
+queue_test_SOURCES =		\
+queue_test.cpp
+
+queue_test_LDADD =		\
+-lpthread
