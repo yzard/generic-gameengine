@@ -60,14 +60,14 @@ public:
 		// size - (in - out) means the free space of the queue
 		// if the number is larger than the free space of
 		// FIFO, then use the free space instead
-		len = min(len, size - (in - out));
+		len = minimal(len, size - (in - out));
 
 		// Ensure we sample the out index before we start putting
 		// bytes into buffer
 		mb();
 
 		// first put the data starting from in to buffer end
-		endLen = min(len, size - (in & (size-1)));
+		endLen = minimal(len, size - (in & (size-1)));
 		memcpy(buffer + (in & (size-1)), elements, endLen*typeSize);
 
 		// then put the rest at the beggining of the buffer
@@ -87,14 +87,14 @@ public:
 	uint32_t get(Type* elements, uint32_t len) {
 		uint32_t endLen;
 
-		len = min(len, in - out);
+		len = minimal(len, in - out);
 
 		// ensure sample the in index before we start removing
 		// bytes from the buffer
 		rmb();
 
 		// first get the data from out to the end of the buffer
-		endLen = min(len, size - (out & (size - 1)));
+		endLen = minimal(len, size - (out & (size - 1)));
 		memcpy(elements, buffer + (out & (size - 1)), endLen*typeSize);
 
 		// then get the rest data from the begining of the buffer

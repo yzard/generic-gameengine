@@ -1,4 +1,7 @@
 EXTRA_DIST = bootstrap.sh
 
-SUBDIRS = \
+ACLOCAL_AMFLAGS = -I m4
+
+SUBDIRS =	\
+libinfra	\
 test

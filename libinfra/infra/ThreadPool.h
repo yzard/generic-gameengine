@@ -1,39 +1,76 @@
 #ifndef __THREADPOOL_H__
 #define __THREADPOOL_H__
 
-#include <pthread.h>
+#include "Object.h"
 #include "Task.h"
+#include "Queue.h"
+#include <pthread.h>
 
-#define DEFAULT_NUM_THREADS 5
-#define MAX_NUM_THREADS 255
+#define DEFAULT_NUM_THREADS 	5
+#define MAX_NUM_THREADS		255
 
 /*
 The thread pool is using POSIX thread libraries,
 if want use other threads, modify ThreadPool.h and ThreadPool.cpp
 */
 
-class ThreadPool: Object {
+class ThreadPool: public Object {
 public:
-	ThreadPool(uint32_t numOfThread = DEFAULT_NUM_THREADS);
+	// this is the method to get instance
+	static ThreadPool* Instance(uint32_t num);
+
+	// don't have to be virtual since the threadpool should
+	// be an implementation of Object
 	~ThreadPool();
+	
+	// Add task to the thread pool
+	// the Task** means an array of (Task*), where Task* is
+	// the pointer to the Task instance, you can pass
+	// the number of (Task*) you want add to the function
+	void add(Task** ppTask, uint32_t number);
+
+	// return the size of threads
+	uint32_t size();
+
+	// the method for join all the threads
+	void joinAll();
+
+	// set affinity
+	ReturnValue setAffinity(uint32_t num, int core);
 
 private:
-	void initialize();
-	void deinitialize();
-	void addTask(Task task);
+	// the threadpool should be singlton
+	// so let the construct to be private
+	ThreadPool(){};
+	ThreadPool(uint32_t num);
 
-	pthread_t* threadPool;
+	// copy constructor is private
+	ThreadPool(ThreadPool const&){};
+	
+	// assignment operator is private
+	ThreadPool& operator=(ThreadPool const&){};
 
-	// Task queue
-	TaskNode* head;
-	TaskNode* tail;
+	// the function that will run when thread
+	// is created
+	static void* m_run(void* data);
 
-	pthread_mutex_t mutex_queue;
-		
-	uint32_t numOfThread;
-	uint32_t numOfWorkingThread;
-	uint32_t numOfSleepingThread;
-}
+private:
+	// the entities of threads
+	static pthread_t* 	m_pThreads;
+	static pthread_mutex_t*	m_pMutexes;
+	// the queue for each thread
+	static Queue<Task*>*	m_pQueues;
+
+	// pthread attribute and status
+	pthread_attr_t		m_attr;
+	void*			m_status;
+
+	// the number of the threads in the threadpool 
+	uint32_t		m_size;
+
+	// the single instance of this class
+	static ThreadPool*	m_pInstance;
+};
 
 
 #endif /* __THREADPOOL_H__ */

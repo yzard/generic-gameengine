@@ -1,18 +1,16 @@
 #ifndef __TASK_H__
 #define __TASK_H__
 
-#include <stdint.h>
-#include <global.h>
-#include <Object.h>
-
-typedef struct TaskElement_t {
-	uint32_t id;
-	Task task;
-} TaskElement;
+#include "Object.h"
+#include "Global.h"
 
 class Task: Object {
 public:
-	virtual int run() = 0;
-}
+	virtual TaskId setId()		= 0;
+	virtual TaskId getId()		= 0;
+	virtual ReturnValue run()	= 0;
+
+	virtual ~Task();
+};
 
 #endif /*  __TASK_H__ */

@@ -1,6 +1,8 @@
 #!/bin/bash -x
 
-aclocal && autoreconf -f -i -Wall,no-obsolete 
+[ -d ./m4 ] && mkdir ./m4
+
+aclocal -I m4 && autoreconf -f -i -Wall,no-obsolete 
 
 automake --add-missing
 

@@ -7,6 +7,6 @@ This class is featureless.
 */
 
 class Object {
-}
+};
 
 #endif /* __OBJECT_H__ */
