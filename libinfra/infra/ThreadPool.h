@@ -1,9 +1,9 @@
 #ifndef __THREADPOOL_H__
 #define __THREADPOOL_H__
 
-#include "Object.h"
-#include "Task.h"
-#include "Queue.h"
+#include <infra/Object.h>
+#include <infra/Task.h>
+#include <infra/Queue.h>
 #include <pthread.h>
 
 #define DEFAULT_NUM_THREADS 	5
@@ -17,7 +17,10 @@ if want use other threads, modify ThreadPool.h and ThreadPool.cpp
 class ThreadPool: public Object {
 public:
 	// this is the method to get instance
-	static ThreadPool* Instance(uint32_t num);
+	static ThreadPool* Instance(uint32_t num = DEFAULT_NUM_THREADS);
+
+	// the destroy function for the ThreadPool, singleton
+	static void Destroy();
 
 	// don't have to be virtual since the threadpool should
 	// be an implementation of Object
@@ -33,7 +36,7 @@ public:
 	uint32_t size();
 
 	// the method for join all the threads
-	void joinAll();
+	void JoinAll();
 
 	// set affinity
 	ReturnValue setAffinity(uint32_t num, int core);

@@ -1,7 +1,7 @@
 #include <iostream>
-#include <../../libinfra/infra/Queue.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <infra/Queue.h>
 
 Queue<int> queue;
 

@@ -1,4 +1,4 @@
-#include "infra/ThreadPool.h"
+#include <infra/ThreadPool.h>
 
 // the static variable for instance, make sure the instance to be
 // only one
@@ -15,8 +15,23 @@ ThreadPool* ThreadPool::Instance(uint32_t number) {
 	return m_pInstance;
 }
 
+// destroy the threadpool
+void ThreadPool::Destroy() {
+	// if the instance is not available, just return
+	if (NULL == m_pInstance) return;
 
-ThreadPool::ThreadPool(uint32_t number = DEFAULT_NUM_THREADS) {
+	// stop all the threads
+	for (uint32_t i = 0; i < m_pInstance->m_size; i++) {
+		std::cout << __FUNC_NAME__ << ": Canceling thread[" << i << "]\n";
+		pthread_cancel(m_pInstance->m_pThreads[i]);
+	}
+
+	// destroy the instance of Threadpool is there is one
+	delete m_pInstance;
+	m_pInstance = NULL;
+}
+
+ThreadPool::ThreadPool(uint32_t number) {
 	// check if the number threads is too many
 	if (number > MAX_NUM_THREADS) number = MAX_NUM_THREADS;
 
@@ -44,7 +59,7 @@ ThreadPool::ThreadPool(uint32_t number = DEFAULT_NUM_THREADS) {
 	// Start create threads
 	for (i = 0; i < m_size; i++) {
 		// TODO: Change to LOG
-		std::cout << "Creating thread[" << i << "] :";
+		std::cout << __FUNC_NAME__ << ": Creating thread[" << i << "] - ";
 		rc = pthread_create(&m_pThreads[i], &m_attr, &ThreadPool::m_run, static_cast<void*>(&i));
 		if (rc) {
 			// TODO: Change to LOG
@@ -68,21 +83,19 @@ ThreadPool::~ThreadPool() {
 	delete[] m_pMutexes;
 }
 
-void ThreadPool::joinAll() {
+void ThreadPool::JoinAll() {
+	if (NULL == m_pInstance) return;
+
 	ReturnValue rc;
+	// TODO: change to log
+	std::cout << __FUNC_NAME__ << ": Join All threads" << std::endl;
 	for (uint32_t i = 0; i < m_size; i++) {
 		rc = pthread_join(m_pThreads[i], &m_status);
 		if (rc != RET_GOOD) {
 			// TODO: change to LOG
-			std::cout << "ERROR: return code from pthread_join() - "
-				  << i << std::endl;
-			exit(-1);
+			errno = rc;
+			perror("pthread_join");
 		}
-		else
-			// TODO: change to LOG
-			std::cout << "Main: thread " << i
-				  << " has a status of "
-				  << (long)m_status << std::endl;
 	}
 }
 
@@ -111,7 +124,7 @@ ReturnValue ThreadPool::setAffinity(uint32_t num, int core) {
 	// TODO: support multiple core
 	CPU_SET(core, &cpuset);
 
-	std::cout << "Setting thread[" << num << "] affinity: ";
+	std::cout << __FUNC_NAME__ << ": Setting thread[" << num << "] affinity: ";
 	int ret;
 	// set pthread affinity
 	ret = pthread_setaffinity_np(m_pThreads[num], sizeof(cpu_set_t), &cpuset);

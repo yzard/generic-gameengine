@@ -1,8 +1,8 @@
 #ifndef __TASK_H__
 #define __TASK_H__
 
-#include "Object.h"
-#include "Global.h"
+#include <infra/Global.h>
+#include <infra/Object.h>
 
 class Task: Object {
 public:

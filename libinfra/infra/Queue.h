@@ -1,7 +1,7 @@
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
-#include "Global.h"
+#include <infra/Global.h>
 #include <cstring>
 #include <stdint.h>
 
