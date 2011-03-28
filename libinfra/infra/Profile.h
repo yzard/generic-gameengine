@@ -11,6 +11,7 @@
 /*
  * rdtsc count functions
  */
+// TODO: finish this
 #ifdef __GNUC__
 
 static inline void rdtsc(uint64_t* val) {
@@ -69,9 +70,32 @@ inline Timestamp monoTime() {
 #endif
 }
 
+// reduced some memory allocation stuff
+// compact version of monoTime, realTime doesn't
+// need this because realTime the clock will skew
+// it's not precise as nanoseconds.
+inline void compactMonoTime(struct timespec* ts) {
+#ifdef HAVE_CLOCK_GETTIME
+#	if defined(CLOCK_MONOTONIC_RAW)
+	clock_gettime(CLOCK_MONOTONIC_RAW, ts);
+#	else
+	clock_gettime(CLOCK_MONOTONIC, ts);
+#	endif
+#else
+	ts->tv_sec	= 0;
+	ts->tv_nsec	= 0;
+#endif
 }
 
-// The following are every useful macros
+}
+
+// Convert timespec to Timestamp
+#define TS_TIMESTAMP(ts)	((ts).tv_sec * 1000000000LL + (ts).tv_nsec )
+
+// Convert timeval to Timestamp
+#define TV_TIMESTAMP(tv)	((tv).tv_sec * 1000000000LL + (tv).tv_usec * 1000LL )
+
+// The following are useful macros
 
 // initialize the variable, this macro should be used
 // combined with CLOCK_REAL_BEGIN, CLOCK_REAL_END,
@@ -105,6 +129,35 @@ inline Timestamp monoTime() {
 	do {						\
 		uint64_t latency;			\
 		latency = name##_end - name##_begin;	\
+		std::cout << __FILE__ << ":"		\
+			  << __LINE__ << ": "		\
+			  << "Latency: "		\
+			  << #name    << "="		\
+			  << latency  << " ns\n";	\
+	} while (0)
+
+// compact version of monoTime, for reducing some nano
+// latencies. the macro that more accurate to measure the
+// latencies
+#define CLOCK_COMPACT_INIT(name)			\
+	struct timespec name##_begin, name##_end;
+
+#define CLOCK_COMPACT_MONO_BEGIN(name)			\
+	do {						\
+		Clock::compactMonoTime(&name##_begin);	\
+	} while(0)
+
+#define CLOCK_COMPACT_MONO_END(name)			\
+	do {						\
+		Clock::compactMonoTime(&name##_end);	\
+	} while(0)
+
+#define CLOCK_COMPACT_PRINT(name)			\
+	do {						\
+		uint64_t begin, end, latency;		\
+		begin 	= TS_TIMESTAMP(name##_begin);	\
+		end	= TS_TIMESTAMP(name##_end);	\
+		latency = end - begin;			\
 		std::cout << __FILE__ << ":"		\
 			  << __LINE__ << ": "		\
 			  << "Latency: "		\

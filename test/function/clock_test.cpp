@@ -2,13 +2,16 @@
 #include <infra/Profile.h>
 
 int main() {
-	CLOCK_INIT(b);
+	CLOCK_COMPACT_INIT(compact);
+	CLOCK_COMPACT_MONO_BEGIN(compact);
+	CLOCK_COMPACT_MONO_END(compact);
+	CLOCK_COMPACT_PRINT(compact);
 
-	CLOCK_REAL_BEGIN(b);
-
-	int i = 3;
-
-	CLOCK_REAL_END(b);
-
-	CLOCK_PRINT(b);
+	// show the monotonic time
+	// the latency for doing nothing
+	// with take 200 ~ 300 ns
+	CLOCK_INIT(mono);
+	CLOCK_MONO_BEGIN(mono);
+	CLOCK_MONO_END(mono);
+	CLOCK_PRINT(mono);
 }
