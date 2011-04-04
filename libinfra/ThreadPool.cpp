@@ -64,7 +64,7 @@ ThreadPool::ThreadPool(uint32_t number) {
 		if (rc) {
 			// TODO: Change to LOG
 			std::cout << "ERROR: return code from pthread_create() - "
-				  << rc << std::endl;
+				  << rc << '\n';
 			exit(-1);
 		}
 		else
@@ -88,7 +88,7 @@ void ThreadPool::JoinAll() {
 
 	ReturnValue rc;
 	// TODO: change to log
-	std::cout << __FUNC_NAME__ << ": Join All threads" << std::endl;
+	std::cout << __FUNC_NAME__ << ": Join All threads" << '\n';
 	for (uint32_t i = 0; i < m_size; i++) {
 		rc = pthread_join(m_pThreads[i], &m_status);
 		if (rc != RET_GOOD) {
@@ -137,12 +137,12 @@ ReturnValue ThreadPool::setAffinity(uint32_t num, int core) {
 	}
 
 	// TODO: Log the affinity
-	std::cout << "set to core " << core << std::endl;
+	std::cout << "set to core " << core << '\n';
 
 	return RET_GOOD;
 }
 
-uint32_t ThreadPool::size() {
+uint32_t ThreadPool::size() const {
 	return m_size;
 }
 
@@ -151,20 +151,29 @@ void* ThreadPool::m_run(void* data) {
 	Task**		ppTask;
 	uint32_t	number = *(static_cast<uint32_t*>(data));
 	uint32_t	received;
+	ReturnValue	ret;
 	
 	while (true) {
-		// TODO: only support one task at once
 		received = m_pQueues[number].get(ppTask, 1);
+		if ( 1 == received) {
+			// then run the task and get return value
+			ret = (*ppTask)[0].run();
 
-		if (0 == received)
-			// if didn't get any task, then sleep
-			sleep(0.01);
-		else if ( 1 == received)
-			// if get 1 task, then run it
-			(*ppTask)[0].run();
-		else
+			// dealing with the ret
 			// TODO: change to LOG
-			std::cout << "Get FIFO wrong" << std::endl;
+			if (ret != RET_GOOD)
+				std::cout << "Warning: exit status " << ret << "\n"; 
+
+		}
+		else if ( 0 == received )
+			// if didn't received any task, then sleep a little bit
+			sleep(0.01);
+		else {
+			// TODO: change to log
+			// if received something wrong, exit
+			std::cout << "Error: the thread cannot get the task!\n"; 
+			break;
+		}
 	}
 	pthread_exit(NULL);
 }

@@ -1,12 +1,10 @@
 #ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
-#include<Object.h>
 #include<Behavior>
 
-class Character: Object {
+class Character {
 private:
-
 	std::vector<Behavior> BehaviorList;
 public:
 

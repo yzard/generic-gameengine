@@ -1,7 +1,6 @@
 #ifndef __THREADPOOL_H__
 #define __THREADPOOL_H__
 
-#include <infra/Object.h>
 #include <infra/Task.h>
 #include <infra/Queue.h>
 #include <pthread.h>
@@ -14,7 +13,7 @@ The thread pool is using POSIX thread libraries,
 if want use other threads, modify ThreadPool.h and ThreadPool.cpp
 */
 
-class ThreadPool: public Object {
+class ThreadPool {
 public:
 	// this is the method to get instance
 	static ThreadPool* Instance(uint32_t num = DEFAULT_NUM_THREADS);
@@ -27,13 +26,13 @@ public:
 	~ThreadPool();
 	
 	// Add task to the thread pool
-	// the Task** means an array of (Task*), where Task* is
+	// the Task** means an array of (Task*), whereas Task* is
 	// the pointer to the Task instance, you can pass
 	// the number of (Task*) you want add to the function
 	void add(Task** ppTask, uint32_t number);
 
 	// return the size of threads
-	uint32_t size();
+	uint32_t size() const;
 
 	// the method for join all the threads
 	void JoinAll();
@@ -42,7 +41,7 @@ public:
 	ReturnValue setAffinity(uint32_t num, int core);
 
 private:
-	// the threadpool should be singlton
+	// the threadpool should be singleton
 	// so let the construct to be private
 	ThreadPool(){};
 	ThreadPool(uint32_t num);

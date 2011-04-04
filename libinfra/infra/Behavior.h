@@ -1,9 +1,9 @@
 #ifndef __BEHAVIOR_H__
 #define __BEHAVIOR_H__
 
-#include<Behavior.h>
+#include <Behavior.h>
 
-class Behavior: Object {
+class Behavior {
 public:
 	virtual void perform() = 0;
 }
