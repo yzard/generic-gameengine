@@ -1,5 +1,5 @@
-#ifndef __CHARACTER_H__
-#define __CHARACTER_H__
+#ifndef __INFRA_CHARACTER_H__
+#define __INFRA_CHARACTER_H__
 
 #include<Behavior>
 
@@ -11,4 +11,4 @@ public:
 	
 }
 
-#endif /* __CHARACTER_H__ */
+#endif /* __INFRA_CHARACTER_H__ */

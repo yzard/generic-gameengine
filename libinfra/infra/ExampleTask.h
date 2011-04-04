@@ -1,5 +1,5 @@
-#ifndef __EXAMPLETASK_H__
-#define __EXAMPLETASK_H__
+#ifndef __INFRA_EXAMPLETASK_H__
+#define __INFRA_EXAMPLETASK_H__
 
 #include <infra/Task.h>
 
@@ -12,4 +12,4 @@ public:
 	// TODO: implement all
 }
 
-#endif /* __EXAMPLETASK_H__ */
+#endif /* __INFRA_EXAMPLETASK_H__ */

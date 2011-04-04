@@ -1,5 +1,5 @@
-#ifndef __QUEUE_H__
-#define __QUEUE_H__
+#ifndef __INFRA_QUEUE_H__
+#define __INFRA_QUEUE_H__
 
 #include <infra/Global.h>
 #include <cstring>
@@ -120,4 +120,4 @@ public:
 
 };
 
-#endif /*  __QUEUE_H__ */
+#endif /*  __INFRA_QUEUE_H__ */

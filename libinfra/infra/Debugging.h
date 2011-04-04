@@ -1,5 +1,5 @@
-#ifndef __DEBUGGING_H__
-#define __DEBUGGING_H__
+#ifndef __INFRA_DEBUGGING_H__
+#define __INFRA_DEBUGGING_H__
 
 #include <iostream>
 
@@ -16,4 +16,4 @@
 		  << #name    << "="	\
 		  << name     << "\n";
 
-#endif /* DEBUGGING_H__ */
+#endif /* __INFRA_DEBUGGING_H__ */

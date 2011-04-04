@@ -1,5 +1,5 @@
-#ifndef __PROFILE_H__
-#define __PROFILE_H__
+#ifndef __INFRA_PROFILE_H__
+#define __INFRA_PROFILE_H__
 
 #include <infra/Global.h>
 #include <iostream>
@@ -165,4 +165,4 @@ inline void compactMonoTime(struct timespec* ts) {
 			  << latency  << " ns\n";	\
 	} while (0)
 
-#endif /* __PROFILE_H__ */
+#endif /* __INFRA_PROFILE_H__ */

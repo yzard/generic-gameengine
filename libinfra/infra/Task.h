@@ -1,5 +1,5 @@
-#ifndef __TASK_H__
-#define __TASK_H__
+#ifndef __INFRA_TASK_H__
+#define __INFRA_TASK_H__
 
 #include <infra/Global.h>
 
@@ -12,4 +12,4 @@ private:
 
 };
 
-#endif /*  __TASK_H__ */
+#endif /*  __INFRA_TASK_H__ */

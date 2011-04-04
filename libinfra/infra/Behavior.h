@@ -1,5 +1,5 @@
-#ifndef __BEHAVIOR_H__
-#define __BEHAVIOR_H__
+#ifndef __INFRA_BEHAVIOR_H__
+#define __INFRA_BEHAVIOR_H__
 
 #include <Behavior.h>
 
@@ -8,6 +8,6 @@ public:
 	virtual void perform() = 0;
 }
 
-#endif /* __BEHAVIOR_H__ */
+#endif /* __INFRA_BEHAVIOR_H__ */
 
 

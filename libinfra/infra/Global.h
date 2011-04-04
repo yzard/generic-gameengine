@@ -1,5 +1,5 @@
-#ifndef __GLOBAL_H__
-#define __GLOBAL_H__
+#ifndef __INFRA_GLOBAL_H__
+#define __INFRA_GLOBAL_H__
 
 #include <stdio.h>
 #include <stdint.h>
@@ -44,4 +44,4 @@
 //
 #define __FUNC_NAME__	__PRETTY_FUNCTION__
 
-#endif /*  __GLOBAL_H__ */
+#endif /*  __INFRA_GLOBAL_H__ */
