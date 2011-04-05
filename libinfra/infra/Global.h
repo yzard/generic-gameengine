@@ -20,12 +20,20 @@
  * System specific definitions
  */
 
-// Copied from linux kernel header, for memory synchronization
-// used for lock free FIFO algorithm
-#define barrier() 	__asm__ __volatile__("": : :"memory")
-#define mb()		barrier()
-#define rmb()		barrier()
-#define wmb()		barrier()
+// memory barrier functions, used for lock free algorithm
+#if defined(__linux__)
+	// if it's linux
+#	define barrier() 	__asm__ __volatile__("": : :"memory")
+#	define mb()		barrier()
+#	define rmb()		barrier()
+#	define wmb()		barrier()
+#elif defined(__MACH__)
+	// if it's mac
+#	include <libkern/OSAtomic.h>
+#	define mb()		OSMemoryBarrier()
+#	define rmb()		OSMemoryBarrier()
+#	define wmb()		OSMemoryBarrier()
+#endif
 
 
 /*

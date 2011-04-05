@@ -115,7 +115,9 @@ public:
 	}
 
 	uint32_t count() {
-		return in - out;
+		uint32_t count = in - out;
+		rmb();
+		return count;
 	}
 
 };

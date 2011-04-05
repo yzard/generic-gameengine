@@ -97,6 +97,7 @@ void ThreadPool::JoinAll() {
 			perror("pthread_join");
 		}
 	}
+	std::cout << "fool\n";
 }
 
 void ThreadPool::add(Task** ppTask, uint32_t number) {
@@ -117,6 +118,7 @@ void ThreadPool::add(Task** ppTask, uint32_t number) {
 }
 
 ReturnValue ThreadPool::setAffinity(uint32_t num, int core) {
+#if defined(__linux__)
 	// initialize cpuset variable with all zero
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
@@ -140,6 +142,14 @@ ReturnValue ThreadPool::setAffinity(uint32_t num, int core) {
 	std::cout << "set to core " << core << '\n';
 
 	return RET_GOOD;
+
+#elif defined(__MACH__)
+	// TODO: implemant Mac specific code
+	return RET_FAIL;
+#else
+	#error "What's your operating system?"
+#endif
+
 }
 
 uint32_t ThreadPool::size() const {
@@ -163,7 +173,6 @@ void* ThreadPool::m_run(void* data) {
 			// TODO: change to LOG
 			if (ret != RET_GOOD)
 				std::cout << "Warning: exit status " << ret << "\n"; 
-
 		}
 		else if ( 0 == received )
 			// if didn't received any task, then sleep a little bit

@@ -3,7 +3,11 @@
 
 #include <infra/Global.h>
 #include <iostream>
-#include <time.h>
+#include <sys/time.h>
+
+#if defined(__MACH__)
+#	include <mach/mach_time.h>
+#endif
 
 // the timestamp will always be the nano precision
 #define Timestamp	uint64_t
@@ -21,7 +25,7 @@ static inline void rdtsc(uint64_t* val) {
 }
 
 #else
-#	error Need add support for this compiler.
+#	error Need add rdtsc() support for this compiler.
 #endif
 
 
@@ -55,7 +59,7 @@ inline Timestamp realTime() {
 // that will not be adjusted by NTP, the support if this needs
 // >= Linux 2.6.28; Linux-specific
 inline Timestamp monoTime() {
-#ifdef HAVE_CLOCK_GETTIME
+#if defined(HAVE_CLOCK_GETTIME)
 	struct timespec ts;
 
 #	if defined(CLOCK_MONOTONIC_RAW)
@@ -65,25 +69,16 @@ inline Timestamp monoTime() {
 #	endif
 
 	return (ts.tv_sec * 1000000000LL + ts.tv_nsec );
-#else
-	return 0;
-#endif
-}
+#elif defined(__MACH__)
+	static mach_timebase_info_data_t info = {0,0};
 
-// reduced some memory allocation stuff
-// compact version of monoTime, realTime doesn't
-// need this because realTime the clock will skew
-// it's not precise as nanoseconds.
-inline void compactMonoTime(struct timespec* ts) {
-#ifdef HAVE_CLOCK_GETTIME
-#	if defined(CLOCK_MONOTONIC_RAW)
-	clock_gettime(CLOCK_MONOTONIC_RAW, ts);
-#	else
-	clock_gettime(CLOCK_MONOTONIC, ts);
-#	endif
+	if (info.denom == 0)
+		mach_timebase_info(&info);
+
+	return mach_absolute_time() * (info.numer / info.denom);
 #else
-	ts->tv_sec	= 0;
-	ts->tv_nsec	= 0;
+#	warn No Monotonic time support!
+	return 0;
 #endif
 }
 
@@ -129,35 +124,6 @@ inline void compactMonoTime(struct timespec* ts) {
 	do {						\
 		uint64_t latency;			\
 		latency = name##_end - name##_begin;	\
-		std::cout << __FILE__ << ":"		\
-			  << __LINE__ << ": "		\
-			  << "Latency: "		\
-			  << #name    << "="		\
-			  << latency  << " ns\n";	\
-	} while (0)
-
-// compact version of monoTime, for reducing some nano
-// latencies. the macro that more accurate to measure the
-// latencies
-#define CLOCK_COMPACT_INIT(name)			\
-	struct timespec name##_begin, name##_end;
-
-#define CLOCK_COMPACT_MONO_BEGIN(name)			\
-	do {						\
-		Clock::compactMonoTime(&name##_begin);	\
-	} while(0)
-
-#define CLOCK_COMPACT_MONO_END(name)			\
-	do {						\
-		Clock::compactMonoTime(&name##_end);	\
-	} while(0)
-
-#define CLOCK_COMPACT_PRINT(name)			\
-	do {						\
-		uint64_t begin, end, latency;		\
-		begin 	= TS_TIMESTAMP(name##_begin);	\
-		end	= TS_TIMESTAMP(name##_end);	\
-		latency = end - begin;			\
 		std::cout << __FILE__ << ":"		\
 			  << __LINE__ << ": "		\
 			  << "Latency: "		\

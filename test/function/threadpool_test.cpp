@@ -12,8 +12,12 @@ int main() {
 	// Register the signal handler
 	signal(SIGINT, signalHandler);
 
+	std::cout << "A\n";
+
 	// Join all
 	pool->JoinAll();
+
+	std::cout << "B\n";
 
 	std::cout << "Quit" << std::endl;
 	return 0;

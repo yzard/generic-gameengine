@@ -3,8 +3,8 @@ lib_LTLIBRARIES = libinfra.la
 infradir = $(includedir)/infra
 
 infra_HEADERS = 		\
-infra/Object.h			\
 infra/Task.h			\
+infra/ExampleTask.h		\
 infra/Behavior.h		\
 infra/Character.h		\
 infra/Queue.h

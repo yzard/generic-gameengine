@@ -50,6 +50,7 @@ if test x$has_clock_gettime = xtrue; then
 else
 	AC_MSG_RESULT([no])
 fi
+
 AM_CONDITIONAL([ENABLE_CLOCK_GETTIME], [test x$has_clock_gettime = xtrue])
 
 # Checks for library functions.
