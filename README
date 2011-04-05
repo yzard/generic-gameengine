@@ -1,0 +1,21 @@
+OVERVIEW
+========
+
+* The Generic Game Engine - experimental project
+
+I created this project is mainly want a generic engine to
+create game on iphone or other platforms
+
+I will add all the interfaces of game elements, and for graphics,
+it will support opencv.
+
+it support mac, linux (windows not supported yet).
+
+This project is still immature. which means cannot be used in production.
+
+HOW TO COMPILE
+==============
+
+./bootstrap.sh
+./configure
+make
