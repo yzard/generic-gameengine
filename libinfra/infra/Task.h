@@ -5,11 +5,9 @@
 
 class Task {
 public:
+	Task() {}
+	virtual ~Task() {};
 	virtual ReturnValue run()	= 0;
-
-	virtual ~Task();
-private:
-
 };
 
 #endif /*  __INFRA_TASK_H__ */

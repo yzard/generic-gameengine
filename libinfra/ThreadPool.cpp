@@ -15,8 +15,52 @@ ThreadPool* ThreadPool::Instance(uint32_t number) {
 	return m_pInstance;
 }
 
+// initialize function
+void ThreadPool::initialize() {
+	// if the instance is not available, just return
+	if (NULL == m_pInstance) return;
+
+	// initialize the pthread attribute, set it joinable
+	pthread_attr_init(&m_pInstance->m_attr);
+	pthread_attr_setdetachstate(&m_pInstance->m_attr, PTHREAD_CREATE_JOINABLE);
+
+	uint32_t i;
+	ReturnValue rc;
+
+	// TODO: Thread Id initialization
+	for (i = 0; i < m_pInstance->m_size; i++)
+		(m_pInstance->m_threadIds)[i] = i;
+
+	// initialize all the mutex for writing
+	for (i = 0; i < m_pInstance->m_size; i++)
+		pthread_mutex_init(&(m_pInstance->m_pMutexes[i]), NULL);
+
+	// Start create threads
+	for (i = 0; i < m_pInstance->m_size; i++) {
+		// TODO: Change to LOG
+		std::cout << __FUNC_NAME__ << ": Creating thread[" << i << "] - ";
+		rc = pthread_create(
+			&(m_pInstance->m_pThreads[i]),
+			&m_pInstance->m_attr,
+			&ThreadPool::m_run,
+			static_cast<void*>(&(m_pInstance->m_threadIds[i]))
+		);
+		if (rc) {
+			// TODO: Change to LOG
+			std::cout << "ERROR: return code from pthread_create() - "
+				  << rc << '\n';
+			exit(EXIT_FAILURE);
+		}
+		else
+			// TODO: Change to LOG
+			std::cout << "Successfully created\n";
+	}
+
+	pthread_attr_destroy(&m_pInstance->m_attr);
+}
+
 // destroy the threadpool
-void ThreadPool::Destroy() {
+void ThreadPool::deinitialize() {
 	// if the instance is not available, just return
 	if (NULL == m_pInstance) return;
 
@@ -42,37 +86,11 @@ ThreadPool::ThreadPool(uint32_t number) {
 	// initialize the queues for each thread 
 	m_pQueues	= new Queue<Task*>[number];
 
+	// allocate threadId memory
+	m_threadIds	= new uint32_t[number];
+
 	// assign number with size
-	m_size		= number;	
-
-	// initialize the pthread attribute
-	pthread_attr_init(&m_attr);
-	pthread_attr_setdetachstate(&m_attr, PTHREAD_CREATE_JOINABLE);
-
-	uint32_t i;
-	ReturnValue rc;
-
-	// initialize all the mutex for writing
-	for (i = 0; i < m_size; i++)
-		pthread_mutex_init(&m_pMutexes[i], NULL);
-
-	// Start create threads
-	for (i = 0; i < m_size; i++) {
-		// TODO: Change to LOG
-		std::cout << __FUNC_NAME__ << ": Creating thread[" << i << "] - ";
-		rc = pthread_create(&m_pThreads[i], &m_attr, &ThreadPool::m_run, static_cast<void*>(&i));
-		if (rc) {
-			// TODO: Change to LOG
-			std::cout << "ERROR: return code from pthread_create() - "
-				  << rc << '\n';
-			exit(-1);
-		}
-		else
-			// TODO: Change to LOG
-			std::cout << "Successfully created\n";
-	}
-
-	pthread_attr_destroy(&m_attr);
+	m_size		= number;
 }
 
 ThreadPool::~ThreadPool() {
@@ -81,6 +99,7 @@ ThreadPool::~ThreadPool() {
 	for (int i = 0; i < m_size; i++)
 		pthread_mutex_destroy(&m_pMutexes[i]);
 	delete[] m_pMutexes;
+	delete[] m_threadIds;
 }
 
 void ThreadPool::JoinAll() {
@@ -90,14 +109,13 @@ void ThreadPool::JoinAll() {
 	// TODO: change to log
 	std::cout << __FUNC_NAME__ << ": Join All threads" << '\n';
 	for (uint32_t i = 0; i < m_size; i++) {
-		rc = pthread_join(m_pThreads[i], &m_status);
+		// It's possible that thread will be canceled and the thread
+		// is not being joined yet. pay attention
+		rc = pthread_join(m_pThreads[i], NULL);
 		if (rc != RET_GOOD) {
-			// TODO: change to LOG
 			errno = rc;
-			perror("pthread_join");
 		}
 	}
-	std::cout << "fool\n";
 }
 
 void ThreadPool::add(Task** ppTask, uint32_t number) {
@@ -174,9 +192,10 @@ void* ThreadPool::m_run(void* data) {
 			if (ret != RET_GOOD)
 				std::cout << "Warning: exit status " << ret << "\n"; 
 		}
-		else if ( 0 == received )
+		else if ( 0 == received ) {
 			// if didn't received any task, then sleep a little bit
 			sleep(0.01);
+		}
 		else {
 			// TODO: change to log
 			// if received something wrong, exit

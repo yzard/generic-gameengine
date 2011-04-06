@@ -1,23 +1,25 @@
 #include <signal.h>
 #include <infra/ThreadPool.h>
+#include <infra/ExampleTask.h>
 
 void signalHandler(int sig) {
 	ThreadPool* pool = ThreadPool::Instance();
-	pool->Destroy();
+	pool->deinitialize();
 }
 
 int main() {
 	ThreadPool* pool = ThreadPool::Instance();
+	pool->initialize();
 	
 	// Register the signal handler
 	signal(SIGINT, signalHandler);
 
-	std::cout << "A\n";
+	//ExampleTask** tasks = new ExampleTask*[10];
+
+	//pool->add(tasks, 10);
 
 	// Join all
 	pool->JoinAll();
-
-	std::cout << "B\n";
 
 	std::cout << "Quit" << std::endl;
 	return 0;

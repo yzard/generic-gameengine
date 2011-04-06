@@ -1,5 +1,5 @@
-#ifndef __THREADPOOL_H__
-#define __THREADPOOL_H__
+#ifndef __INFRA_THREADPOOL_H__
+#define __INFRA_THREADPOOL_H__
 
 #include <infra/Task.h>
 #include <infra/Queue.h>
@@ -18,8 +18,11 @@ public:
 	// this is the method to get instance
 	static ThreadPool* Instance(uint32_t num = DEFAULT_NUM_THREADS);
 
+	// initialize function
+	static void initialize();
+
 	// the destroy function for the ThreadPool, singleton
-	static void Destroy();
+	static void deinitialize();
 
 	// don't have to be virtual since the threadpool should
 	// be an implementation of Object
@@ -63,16 +66,19 @@ private:
 	// the queue for each thread
 	static Queue<Task*>*	m_pQueues;
 
+	// ThreadIds
+	uint32_t*		m_threadIds;
+
 	// pthread attribute and status
 	pthread_attr_t		m_attr;
-	void*			m_status;
 
 	// the number of the threads in the threadpool 
 	uint32_t		m_size;
 
 	// the single instance of this class
 	static ThreadPool*	m_pInstance;
+
 };
 
 
-#endif /* __THREADPOOL_H__ */
+#endif /* __INFRA_THREADPOOL_H__ */
