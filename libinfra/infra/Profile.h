@@ -38,7 +38,7 @@ static inline void rdtsc(uint64_t* val) {
 namespace Clock {
 
 // the system clock functions
-inline Timestamp realTime() {
+static inline Timestamp realTime() {
 #ifdef HAVE_CLOCK_GETTIME
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
@@ -58,7 +58,7 @@ inline Timestamp realTime() {
 // Similar to monotonic time, Raw time is the hardware-based time
 // that will not be adjusted by NTP, the support if this needs
 // >= Linux 2.6.28; Linux-specific
-inline Timestamp monoTime() {
+static inline Timestamp monoTime() {
 #if defined(HAVE_CLOCK_GETTIME)
 	struct timespec ts;
 
