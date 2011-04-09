@@ -32,6 +32,11 @@ endif !ENABLE_CLOCK_GETTIME
 threadpool_test_LDADD =				\
 $(LDALL)
 
+if ENABLE_CLOCK_GETTIME
+clock_test_LDADD =				\
+$(LDALL)					\
+-lrt
+else !ENABLE_CLOCK_GETTIME
 clock_test_LDADD =				\
 $(LDALL)
-
+endif !ENABLE_CLOCK_GETTIME

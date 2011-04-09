@@ -7,6 +7,7 @@ AC_CONFIG_SRCDIR([libinfra/ThreadPool.cpp])
 AC_CONFIG_HEADERS([config.h:config.h.in])
 AC_CONFIG_MACRO_DIR([m4])
 
+# made compile process more clean
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
