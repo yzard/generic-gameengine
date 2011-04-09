@@ -37,8 +37,13 @@ static inline void rdtsc(uint64_t* val) {
 // class
 namespace Clock {
 
+// since C99 standard suggest not use static to enforce the localize
+// of function in the compilation unit, so use anonymous namespace
+// instead.
+namespace {
+
 // the system clock functions
-static inline Timestamp realTime() {
+inline Timestamp realTime() {
 #ifdef HAVE_CLOCK_GETTIME
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
@@ -58,7 +63,7 @@ static inline Timestamp realTime() {
 // Similar to monotonic time, Raw time is the hardware-based time
 // that will not be adjusted by NTP, the support if this needs
 // >= Linux 2.6.28; Linux-specific
-static inline Timestamp monoTime() {
+inline Timestamp monoTime() {
 #if defined(HAVE_CLOCK_GETTIME)
 	struct timespec ts;
 
@@ -80,6 +85,8 @@ static inline Timestamp monoTime() {
 #	warn No Monotonic time support!
 	return 0;
 #endif
+}
+
 }
 
 }
