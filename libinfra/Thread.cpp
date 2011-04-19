@@ -37,9 +37,11 @@ ReturnValue Thread::start() {
 }
 
 ReturnValue Thread::cancel() {
-	pthread_cancel(thread);
-		
-	return RET_GOOD;
+	ReturnValue ret;
+	
+	ret = pthread_cancel(thread);
+
+	return ret;
 }
 
 ReturnValue Thread::join() {
@@ -50,6 +52,7 @@ ReturnValue Thread::join() {
 	rc = pthread_join(thread, NULL);
 	if (rc != RET_GOOD) {
 		errno = rc;
+		perror("pthread_join");
 	}
 
 	return rc;

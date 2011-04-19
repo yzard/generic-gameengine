@@ -10,7 +10,7 @@
 #define TOSTRING(x) STRINGIFY(x)
 
 // AT will give the const char string for file and line
-#define AT __FILE__ ":" TOSTRING(__LINE__)
+#define AT __FILE__ ":" TOSTRING(__LINE__) ": "
 
 // ATSTRING
 #define ATSTRING(msg) std::string(std::string(AT) + std::string(msg))

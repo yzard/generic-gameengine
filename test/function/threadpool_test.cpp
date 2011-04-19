@@ -5,23 +5,22 @@
 
 void signalHandler(int sig) {
 	ThreadPool* pool = ThreadPool::Instance();
-	pool->deinitialize();
+
+	// JoinAll will deal with the memory de-allocation
+	// if all the threads are safely quited.
+	// so calling CancelAll here is fine
+	pool->CancelAll();
 }
 
 int main() {
 	ThreadPool* pool = ThreadPool::Instance();
-	pool->initialize();
 	
 	// Register the signal handler
 	signal(SIGINT, signalHandler);
 
 	//ExampleTask** tasks = new ExampleTask*[10];
-
 	//pool->add(tasks, 10);
-
-	int i = 1;
-	TRACE(i);
-
+	
 	// Join all
 	pool->JoinAll();
 

@@ -8,7 +8,7 @@
 #include <infra/Queue.h>
 
 #define DEFAULT_THREAD_ID	0
-#define DEFAULT_NUM_THREADS 	5
+#define DEFAULT_NUM_THREADS 	8
 #define MAX_NUM_THREADS		1024
 
 /*
@@ -20,13 +20,6 @@ class ThreadPool {
 public:
 	// this is the method to get instance
 	static ThreadPool* Instance(uint32_t num = DEFAULT_NUM_THREADS);
-
-	// initialize function, static
-	static void initialize();
-
-	// the destroy function for the ThreadPool, singleton
-	// need be static too
-	static void deinitialize();
 
 	// don't have to be virtual since the threadpool should
 	// be an implementation of Object
@@ -43,6 +36,9 @@ public:
 	// the method for join all the threads
 	void JoinAll();
 
+	// the method for cancel all the threads
+	ReturnValue CancelAll();
+
 	// set affinity
 	ReturnValue setAffinity(uint32_t num, int core);
 
@@ -52,6 +48,13 @@ private:
 	ThreadPool(){};
 	ThreadPool(uint32_t num);
 
+	// initialize function, static
+	void initialize();
+
+	// the destroy function for the ThreadPool, singleton
+	// need be static too
+	void deinitialize();
+
 	// copy constructor is private
 	ThreadPool(ThreadPool const&){};
 	
@@ -60,26 +63,26 @@ private:
 
 	// the function that will run when thread
 	// is created
-	static void* m_run(void* data);
+	static void* entry(void* data);
 
 	// deadlock detection, may have other purpose detection
 	// but right the detection of deadlock will be implemented.
 	// this function will create a thread to do periodically
 	// check for deadlocks.
-	static void detection();
+	void detection();
 
 private:
-	static Thread*		m_detectThread;
+	Thread*			m_detectThread;
 
 	// the entities of threads
-	static Thread*		m_pThreads;
-	static Mutex*		m_pMutexes;
+	Thread*			m_pThreads;
+	Mutex*			m_pMutexes;
 
 	// the queue for each thread
-	static Queue<Task*>*	m_pQueues;
+	Queue<Task*>*		m_pQueues;
 
 	// ThreadAgent
-	static ThreadAgent*	m_threadAgents;
+	ThreadAgent*		m_threadAgents;
 
 	// pthread attribute and status
 	pthread_attr_t		m_attr;
@@ -89,7 +92,6 @@ private:
 
 	// the single instance of this class
 	static ThreadPool*	m_pInstance;
-
 };
 
 
