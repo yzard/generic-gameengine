@@ -14,7 +14,8 @@
  *	Queue<Task*>	task_queue; // Task is a class here.
  */
 
-#define DEFAULT_QUEUE_SIZE 1024
+#define DEFAULT_QUEUE_SIZE	1024
+#define DEFAULT_LENGTH		1
 
 template <class Type>
 class Queue {
@@ -54,7 +55,7 @@ public:
 
 	// the method for thread to put stuff in the queue
 	// can be number of stuff
-	uint32_t put(Type* elements, uint32_t len) {
+	uint32_t put(Type* elements, uint32_t len = DEFAULT_LENGTH) {
 		uint32_t endLen;
 
 		// size - (in - out) means the free space of the queue
@@ -84,7 +85,7 @@ public:
 	};
 
 	// the method for another thread to get stuff off the queue
-	uint32_t get(Type* elements, uint32_t len) {
+	uint32_t get(Type* elements, uint32_t len = DEFAULT_LENGTH) {
 		uint32_t endLen;
 
 		len = minimal(len, in - out);

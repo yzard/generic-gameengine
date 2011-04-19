@@ -1,12 +1,15 @@
 #ifndef __INFRA_THREADPOOL_H__
 #define __INFRA_THREADPOOL_H__
 
+#include <infra/ThreadAgent.h>
+#include <infra/Thread.h>
+#include <infra/Mutex.h>
 #include <infra/Task.h>
 #include <infra/Queue.h>
-#include <pthread.h>
 
+#define DEFAULT_THREAD_ID	0
 #define DEFAULT_NUM_THREADS 	5
-#define MAX_NUM_THREADS		255
+#define MAX_NUM_THREADS		1024
 
 /*
 The thread pool is using POSIX thread libraries,
@@ -18,10 +21,11 @@ public:
 	// this is the method to get instance
 	static ThreadPool* Instance(uint32_t num = DEFAULT_NUM_THREADS);
 
-	// initialize function
+	// initialize function, static
 	static void initialize();
 
 	// the destroy function for the ThreadPool, singleton
+	// need be static too
 	static void deinitialize();
 
 	// don't have to be virtual since the threadpool should
@@ -29,10 +33,9 @@ public:
 	~ThreadPool();
 	
 	// Add task to the thread pool
-	// the Task** means an array of (Task*), whereas Task* is
-	// the pointer to the Task instance, you can pass
-	// the number of (Task*) you want add to the function
-	void add(Task** ppTask, uint32_t number);
+	// the Task* means an pointer to a Task instance, you can pass
+	// which thread you want add.
+	void add(Task* pTask, uint32_t id = DEFAULT_THREAD_ID);
 
 	// return the size of threads
 	uint32_t size() const;
@@ -59,15 +62,24 @@ private:
 	// is created
 	static void* m_run(void* data);
 
+	// deadlock detection, may have other purpose detection
+	// but right the detection of deadlock will be implemented.
+	// this function will create a thread to do periodically
+	// check for deadlocks.
+	static void detection();
+
 private:
+	static Thread*		m_detectThread;
+
 	// the entities of threads
-	static pthread_t* 	m_pThreads;
-	static pthread_mutex_t*	m_pMutexes;
+	static Thread*		m_pThreads;
+	static Mutex*		m_pMutexes;
+
 	// the queue for each thread
 	static Queue<Task*>*	m_pQueues;
 
-	// ThreadIds
-	uint32_t*		m_threadIds;
+	// ThreadAgent
+	static ThreadAgent*	m_threadAgents;
 
 	// pthread attribute and status
 	pthread_attr_t		m_attr;

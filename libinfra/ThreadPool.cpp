@@ -3,9 +3,11 @@
 // the static variable for instance, make sure the instance to be
 // only one
 ThreadPool* ThreadPool::m_pInstance	= NULL;
-pthread_t* ThreadPool::m_pThreads	= NULL;
-pthread_mutex_t* ThreadPool::m_pMutexes	= NULL;
+Thread* ThreadPool::m_pThreads		= NULL;
+Mutex* ThreadPool::m_pMutexes		= NULL;
 Queue<Task*>* ThreadPool::m_pQueues	= NULL;
+ThreadAgent* ThreadPool::m_threadAgents	= NULL;
+Thread* ThreadPool::m_detectThread	= NULL;
 
 // Singleton, ensure there is always only one instance
 ThreadPool* ThreadPool::Instance(uint32_t number) {
@@ -20,43 +22,33 @@ void ThreadPool::initialize() {
 	// if the instance is not available, just return
 	if (NULL == m_pInstance) return;
 
-	// initialize the pthread attribute, set it joinable
-	pthread_attr_init(&m_pInstance->m_attr);
-	pthread_attr_setdetachstate(&m_pInstance->m_attr, PTHREAD_CREATE_JOINABLE);
-
 	uint32_t i;
-	ReturnValue rc;
 
-	// TODO: Thread Id initialization
-	for (i = 0; i < m_pInstance->m_size; i++)
-		(m_pInstance->m_threadIds)[i] = i;
+	// Thread Agent structure initialization
+	for (i = 0; i < m_pInstance->m_size; i++) {
+		// ThreadPool id
+		m_threadAgents[i].setId(i);
 
-	// initialize all the mutex for writing
-	for (i = 0; i < m_pInstance->m_size; i++)
-		pthread_mutex_init(&(m_pInstance->m_pMutexes[i]), NULL);
+		// at the beginning, the thread is not running
+		m_threadAgents[i].setRunning(false);
+	}
+
+	// set the entry point and parameters
+	for (i = 0; i < m_pInstance->m_size; i++) {
+		m_pThreads[i].setParameters(
+			&ThreadPool::m_run,
+			static_cast<void*>(&m_threadAgents[i])
+		);
+	}
 
 	// Start create threads
 	for (i = 0; i < m_pInstance->m_size; i++) {
 		// TODO: Change to LOG
 		std::cout << __FUNC_NAME__ << ": Creating thread[" << i << "] - ";
-		rc = pthread_create(
-			&(m_pInstance->m_pThreads[i]),
-			&m_pInstance->m_attr,
-			&ThreadPool::m_run,
-			static_cast<void*>(&(m_pInstance->m_threadIds[i]))
-		);
-		if (rc) {
-			// TODO: Change to LOG
-			std::cout << "ERROR: return code from pthread_create() - "
-				  << rc << '\n';
-			exit(EXIT_FAILURE);
-		}
-		else
-			// TODO: Change to LOG
-			std::cout << "Successfully created\n";
-	}
 
-	pthread_attr_destroy(&m_pInstance->m_attr);
+		// actually start the thread
+		m_pThreads[i].start();
+	}
 }
 
 // destroy the threadpool
@@ -67,7 +59,7 @@ void ThreadPool::deinitialize() {
 	// stop all the threads
 	for (uint32_t i = 0; i < m_pInstance->m_size; i++) {
 		std::cout << __FUNC_NAME__ << ": Canceling thread[" << i << "]\n";
-		pthread_cancel(m_pInstance->m_pThreads[i]);
+		m_pThreads[i].cancel();
 	}
 
 	// destroy the instance of Threadpool is there is one
@@ -79,95 +71,66 @@ ThreadPool::ThreadPool(uint32_t number) {
 	// check if the number threads is too many
 	if (number > MAX_NUM_THREADS) number = MAX_NUM_THREADS;
 
+	// detection thread
+	m_detectThread	= new Thread;
+
 	// allocate number of threads and mutexes
-	m_pThreads	= new pthread_t[number];
-	m_pMutexes	= new pthread_mutex_t[number];
+	m_pThreads	= new Thread[number];
+	m_pMutexes	= new Mutex[number];
 
 	// initialize the queues for each thread 
 	m_pQueues	= new Queue<Task*>[number];
 
 	// allocate threadId memory
-	m_threadIds	= new uint32_t[number];
+	m_threadAgents	= new ThreadAgent[number];
 
 	// assign number with size
 	m_size		= number;
 }
 
 ThreadPool::~ThreadPool() {
+	delete m_detectThread;	
+
 	delete[] m_pThreads;
 	delete[] m_pQueues;
-	for (int i = 0; i < m_size; i++)
-		pthread_mutex_destroy(&m_pMutexes[i]);
 	delete[] m_pMutexes;
-	delete[] m_threadIds;
+	delete[] m_threadAgents;
 }
 
 void ThreadPool::JoinAll() {
 	if (NULL == m_pInstance) return;
 
-	ReturnValue rc;
 	// TODO: change to log
 	std::cout << __FUNC_NAME__ << ": Join All threads" << '\n';
 	for (uint32_t i = 0; i < m_size; i++) {
-		// It's possible that thread will be canceled and the thread
-		// is not being joined yet. pay attention
-		rc = pthread_join(m_pThreads[i], NULL);
-		if (rc != RET_GOOD) {
-			errno = rc;
-		}
+		// join the thread
+		m_pThreads[i].join();
 	}
 }
 
-void ThreadPool::add(Task** ppTask, uint32_t number) {
-	// choose which queue you want add
-	// need more sophisticate one
-
-	// TODO: decide i
-	uint32_t i = 0;
+void ThreadPool::add(Task* pTask, uint32_t id) {
+	// if the id exceed the number of threads, mod it
+	if (id > m_size)
+		id = id % m_size;
 
 	// lock the mutex
-	pthread_mutex_lock(&m_pMutexes[i]);
+	m_pMutexes[id].lock();
 
 	// add the mutex to queue according to the task
-	m_pQueues[i].put(ppTask, number);
+	m_pQueues[id].put(static_cast<Task**>(&pTask));
 
 	// unlock the mutex
-	pthread_mutex_unlock(&m_pMutexes[i]);
+	m_pMutexes[id].unlock();
 }
 
-ReturnValue ThreadPool::setAffinity(uint32_t num, int core) {
-#if defined(__linux__)
-	// initialize cpuset variable with all zero
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	
-	// TODO: support multiple core
-	CPU_SET(core, &cpuset);
+// assign the specific thread (id) to running on core
+ReturnValue ThreadPool::setAffinity(uint32_t id, int cores) {
+	ReturnValue ret;
+	std::cout << __FUNC_NAME__ << ": Setting thread[" << id << "] affinity: ";
 
-	std::cout << __FUNC_NAME__ << ": Setting thread[" << num << "] affinity: ";
-	int ret;
-	// set pthread affinity
-	ret = pthread_setaffinity_np(m_pThreads[num], sizeof(cpu_set_t), &cpuset);
-	if (ret != RET_GOOD) {
-		// TODO: log error message 
-		std::cout << "Fail to set affinity"; 
-		errno = ret;
-		perror("pthread_setaffinity_np");
-		return RET_FAIL;
-	}
-
-	// TODO: Log the affinity
-	std::cout << "set to core " << core << '\n';
-
-	return RET_GOOD;
-
-#elif defined(__MACH__)
-	// TODO: implemant Mac specific code
-	return RET_FAIL;
-#else
-	#error "What's your operating system?"
-#endif
-
+	// set affinity
+	ret = m_pThreads[id].setAffinity(cores);
+	return ret;
 }
 
 uint32_t ThreadPool::size() const {
@@ -177,20 +140,35 @@ uint32_t ThreadPool::size() const {
 // static run function
 void* ThreadPool::m_run(void* data) {
 	Task**		ppTask;
-	uint32_t	number = *(static_cast<uint32_t*>(data));
-	uint32_t	received;
+	ThreadAgent*	threadAgent 	= static_cast<ThreadAgent*>(data);
 	ReturnValue	ret;
+	uint32_t	received;
 	
 	while (true) {
-		received = m_pQueues[number].get(ppTask, 1);
+		received = m_pQueues[threadAgent->getId()].get(ppTask);
 		if ( 1 == received) {
-			// then run the task and get return value
-			ret = (*ppTask)[0].run();
+			// ready to start the thread runing
+			threadAgent->setRunning(true);
+	
+			try {
+				// then run the task and get return value
+				ret = (*ppTask)[0].run();
 
-			// dealing with the ret
-			// TODO: change to LOG
-			if (ret != RET_GOOD)
+				// dealing with the ret
+				if (ret != RET_GOOD)
+					throw ret;
+			}
+			catch(ReturnValue i) {
+				// TODO: change to LOG
 				std::cout << "Warning: exit status " << ret << "\n"; 
+			}
+			catch(...) {			// catch all other exceptions
+				// TODO: change to LOG
+				std::cerr << "Error: catched unhandled exception\n";	
+			}
+
+			// thread is done, finished running
+			threadAgent->setRunning(false);
 		}
 		else if ( 0 == received ) {
 			// if didn't received any task, then sleep a little bit
@@ -199,11 +177,60 @@ void* ThreadPool::m_run(void* data) {
 		else {
 			// TODO: change to log
 			// if received something wrong, exit
-			std::cout << "Error: the thread cannot get the task!\n"; 
+			std::cerr << "Error: the thread cannot get the task!\n"; 
 			break;
 		}
 	}
 	pthread_exit(NULL);
 }
+
+// deadlock detection
+// TODO: try to optimize it, loop detection
+void ThreadPool::detection() {
+	std::set<uint32_t> threadIdSet;
+	Mutex* locking;
+
+	for (uint32_t head = 0; head < m_pInstance->m_size; ++head) {
+		threadIdSet.clear();
+		uint32_t current = head;
+		bool loop = false;
+
+		while (true) {
+			// if the thread is already kept in the threadIdSet,
+			// then loop detected.
+			if (threadIdSet.find(current) != threadIdSet.end()) {
+				loop = true;
+				break;
+			}
+
+			threadIdSet.insert(current);
+			locking = m_threadAgents[current].getLocking();
+			bool found = false;
+
+			// find which thread is holding the "locking"
+			uint32_t i;
+			for (i = 0; i < m_pInstance->m_size; ++i) {
+				std::set<Mutex*>& locked
+					= m_threadAgents[i].getLocked();
+				// if find the locking one 
+				if (locked.find(locking) == locked.end())
+					found = true;
+			}
+
+			if (true == found)
+				// go next thread
+				current = i;
+			else
+				// if not found, then the chain is end
+				break;
+		}
+
+		if (true == loop) {
+			// deadlock thread detected;
+			std::cout << "!!! deadlock detected !!!\n";
+		}
+	}
+}
+
 
 
