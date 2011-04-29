@@ -11,22 +11,7 @@
 
 // the timestamp will always be the nano precision
 #define Timestamp	uint64_t
-
-/*
- * rdtsc count functions
- */
-// TODO: finish this
-#ifdef __GNUC__
-
-static inline void rdtsc(uint64_t* val) {
-	uint32_t low, high, aux;
-	__asm__ __volatile__("rdtscp" : "=a" (low) , "=d" (high), "=c" (aux));
-	*val = ((uint64_t) high << 32) | low;
-}
-
-#else
-#	error Need add rdtsc() support for this compiler.
-#endif
+#define Cycles		uint64_t
 
 
 /***************************************************************
@@ -41,6 +26,45 @@ namespace Clock {
 // of function in the compilation unit, so use anonymous namespace
 // instead.
 namespace {
+
+// this is the structure for recording rdtsc instructions reads
+// the id field is for core i7, rdtscp can retrieve the processor
+// id when doing rdtsc too.
+struct StructRdtsc {
+	uint64_t high;		// high 32 bits
+	uint32_t low;		// low 32 bits
+	uint32_t id;		// the processor id
+};
+
+// rdtsc count functions
+#ifdef __GNUC__
+inline void rdtsc(StructRdtsc& record) {
+	// serailization
+	// this assembly code will take
+	// 100 cycles
+	__asm__ __volatile__(
+	"xorl %%eax,%%eax \n       cpuid"
+	::: "%rax", "%rbx", "%rcx", "rdx");
+
+	// use rdtscp if your cpu is core i7 above
+	// then you don't need serialize, that's because of out of
+	// order execute
+	// __asm__ __volatile__(
+	//	"rdtscp"
+	//	: "=a" (record.low), "=d" (record.high), "=c" (record.id));
+
+	__asm__ __volatile__("rdtsc" : "=a" (record.low) , "=d" (record.high));
+}
+#else
+#	error Need add rdtsc() support for this compiler.
+#endif
+
+// Return the CPU Hz
+// TODO: finish it
+inline Cycles CPUHz() {
+	Cycles s, e;
+	return 0;
+}
 
 // the system clock functions
 inline Timestamp realTime() {

@@ -30,6 +30,9 @@ public:
 	// thread.
 	ReturnValue join();
 
+	// detach the thread
+	ReturnValue detach();
+
 	ReturnValue setAffinity(int cores);
 };
 

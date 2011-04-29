@@ -58,6 +58,14 @@ ReturnValue Thread::join() {
 	return rc;
 }
 
+ReturnValue Thread::detach() {
+	ReturnValue rc;
+
+	rc = pthread_detach(thread);
+
+	return rc;
+}
+
 ReturnValue Thread::setAffinity(int cores) {
 #if defined(__linux__)
 	// initialize cpuset variable with all zero

@@ -9,4 +9,17 @@ int main() {
 	CLOCK_MONO_BEGIN(mono);
 	CLOCK_MONO_END(mono);
 	CLOCK_PRINT(mono);
+
+	Clock::StructRdtsc s, e;
+	uint64_t d;
+
+	for (int i = 0; i < 100; i++) {
+		Clock::rdtsc(s);
+		Clock::rdtsc(e);
+	
+		// see how many cycles rdtsc needs
+		d = (e.high << 32 | e.low) - (s.high << 32 | s.low);
+	
+		std::cout << d << std::endl;
+	}
 }
