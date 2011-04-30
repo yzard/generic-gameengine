@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <infra/Queue.h>
 
-Queue<int> queue;
+Queue<int> queue(100);
 
 void *feeder(void *id) {
 	const int all = 2000;

@@ -3,6 +3,7 @@
 
 #include <infra/Global.h>
 #include <cstring>
+#include <cmath>
 #include <stdint.h>
 
 /* This is a lock-free FIFO queue template implementation.
@@ -32,9 +33,9 @@ public:
 	Queue(uint32_t init_size = DEFAULT_QUEUE_SIZE) {
 		// check if the size is 2^n
 		if (init_size & (init_size - 1)) {
-			// the size is not 2^n, set it
-			// to default queue size
-			init_size = DEFAULT_QUEUE_SIZE;
+			// the size is not 2^n, set it to be lower bound of 2^n
+			uint32_t power = log2(init_size);
+			init_size = pow(2,power);
 		};
 
 		size 		= init_size;
