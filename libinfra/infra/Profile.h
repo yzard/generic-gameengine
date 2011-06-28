@@ -31,8 +31,7 @@ namespace {
 // the id field is for core i7, rdtscp can retrieve the processor
 // id when doing rdtsc too.
 struct StructRdtsc {
-	uint64_t high;		// high 32 bits
-	uint32_t low;		// low 32 bits
+	uint64_t count;		// 64 bits count
 	uint32_t id;		// the processor id
 };
 
@@ -43,7 +42,8 @@ inline void rdtsc(StructRdtsc& record) {
 	// this assembly code will take
 	// 100 cycles
 	__asm__ __volatile__(
-	"xorl %%eax,%%eax \n       cpuid"
+		"xorl %%eax,%%eax;"
+		"cpuid;"
 	::: "%rax", "%rbx", "%rcx", "rdx");
 
 	// use rdtscp if your cpu is core i7 above
@@ -53,7 +53,7 @@ inline void rdtsc(StructRdtsc& record) {
 	//	"rdtscp"
 	//	: "=a" (record.low), "=d" (record.high), "=c" (record.id));
 
-	__asm__ __volatile__("rdtsc" : "=a" (record.low) , "=d" (record.high));
+	__asm__ __volatile__("rdtsc" : "=A" (record.count));
 }
 #else
 #	error Need add rdtsc() support for this compiler.
