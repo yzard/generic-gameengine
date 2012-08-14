@@ -68,45 +68,58 @@ void ThreadPool::deinitialize() {
 void* ThreadPool::entry(void* data) {
 	Task**		ppTask;
 	ThreadAgent*	threadAgent 	= static_cast<ThreadAgent*>(data);
-	ReturnValue	ret;
-	uint32_t	received;
+	uint32_t 	threadAgentID	= threadAgent->getId(); 
+	Queue<Task*>&	taskQueue	= m_pInstance->m_pQueues[threadAgentID];
+	uint32_t	receivedNumber;
+	ReturnValue	returnValue;
 	
 	while (true) {
-		received = (m_pInstance->m_pQueues[threadAgent->getId()]).get(ppTask);
-		if ( 1 == received) {
-			// ready to start the thread runing
-			threadAgent->setRunning(true);
-	
-			try {
-				// then run the task and get return value
-				ret = (*ppTask)[0].run();
-
-				// dealing with the ret
-				if (ret != RET_GOOD)
-					throw ret;
-			}
-			catch(ReturnValue i) {
-				// TODO: change to LOG
-				std::cout << "Warning: exit status " << ret << "\n"; 
-			}
-			catch(...) {			// catch all other exceptions
-				// TODO: change to LOG
-				std::cerr << "Error: catched unhandled exception\n";	
-			}
-
-			// thread is done, finished running
-			threadAgent->setRunning(false);
-		}
-		else if ( 0 == received ) {
-			// if didn't received any task, then sleep a little bit
+		receivedNumber = taskQueue.get(ppTask);
+		if (receivedNumber == 0) {
+			// if didn't receive anything, then sleep for a while
+			// and continue
 			sleep(0.01);
+			continue;
 		}
-		else {
+		else if (receivedNumber > 1) {
 			// TODO: change to log
 			// if received something wrong, exit
 			std::cerr << "Error: the thread cannot get the task!\n"; 
 			break;
 		}
+		else if (receivedNumber < 0) {
+			std::cerr << "Error: queue gave negative size\n";
+			break;
+		}
+		
+		// if received only 1 task, then it's correct
+		// before the thread is running, set the thread to be
+		// state running
+		threadAgent->setRunning(true);
+	
+		// run task
+		try {
+			// then run the task and get return value
+			returnValue = (*ppTask)[0].run();
+
+			// dealing with the ret
+			if (returnValue != RET_GOOD)
+				throw returnValue;
+		}
+		catch(ReturnValue i) {
+			// TODO: change to LOG
+			std::cout << "Warning: exit status " << returnValue
+				  << "\n"; 
+		}
+		catch(...) {
+			// TODO: change to LOG
+			// catch all other exceptions
+			std::cerr << "Error: catched unhandled exception\n";	
+		}
+
+		// thread is done, finished running, so set the thread state to
+		// be not running.
+		threadAgent->setRunning(false);
 	}
 	pthread_exit(NULL);
 }

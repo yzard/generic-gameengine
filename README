@@ -13,6 +13,13 @@ it support mac, linux (windows not supported yet).
 
 This project is still immature. which means cannot be used in production.
 
+REQUIREMENT
+===========
+
+libstdc++
+gtest
+
+
 HOW TO COMPILE
 ==============
 

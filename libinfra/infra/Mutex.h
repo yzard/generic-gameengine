@@ -1,7 +1,7 @@
 #ifndef __INFRA_MUTEX_H__
 #define __INFRA_MUTEX_H__
 
-#include <infra/Global.h>
+#include <Global.h>
 #include <pthread.h>
 
 class Mutex {

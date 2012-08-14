@@ -1,1 +1,1 @@
-SUBDIRS = function unit
+SUBDIRS = function performance unit

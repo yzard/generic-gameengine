@@ -4,12 +4,14 @@ statedir = $(includedir)/state
 
 state_HEADERS = 		\
 state/BroadCaster.h		\
+state/ByteStream.h		\
 state/EventManager.h		\
 state/MultiCaster.h		\
 state/ICaster.h			\
 state/IEvent.h			\
 state/IActioner.h		\
 state/IReceiver.h		\
+state/ISerializable.h		\
 state/Route.h			\
 state/RouteTable.h		\
 state/SingleCaster.h		\
@@ -18,6 +20,7 @@ state/StateManager.h
 
 libstate_la_SOURCES =		\
 BroadCaster.cpp			\
+ByteStream.cpp			\
 EventManager.cpp		\
 MultiCaster.cpp			\
 Route.cpp			\

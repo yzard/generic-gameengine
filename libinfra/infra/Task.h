@@ -1,7 +1,7 @@
 #ifndef __INFRA_TASK_H__
 #define __INFRA_TASK_H__
 
-#include <infra/Global.h>
+#include <Global.h>
 
 class Task {
 public:

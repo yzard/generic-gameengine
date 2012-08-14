@@ -6,6 +6,7 @@ gameenginedir = $(includedir)
 
 gameengine_HEADERS = config.h
 
-SUBDIRS =	\
-libinfra	\
+SUBDIRS =			\
+libinfra			\
+libstate			\
 test

@@ -1,7 +1,7 @@
 #ifndef __INFRA_THREADAGENT_H__
 #define __INFRA_THREADAGENT_H__
 
-#include <infra/Global.h>
+#include <Global.h>
 #include <infra/Mutex.h>
 #include <set>
 

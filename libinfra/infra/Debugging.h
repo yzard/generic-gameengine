@@ -21,17 +21,23 @@
 //     ^        ^               ^     ^
 //     |filename|               |     |variable value
 //              |line           |variable name
-#define TRACE(variable)	do {								\
-	int status;									\
-	char *realname = abi::__cxa_demangle(typeid(variable).name(), 0, 0, &status); 	\
-	std::cerr << AT << ": "								\
-		  << "dump: "								\
-		  << realname << " "							\
-		  << #variable    << " = "						\
-		  << '[' << variable << ']' << "\n";					\
-	free(realname);									\
-	} while (0)
+#define DUMP(variable)	do {						\
+	int status;							\
+	char *realname =						\
+		abi::__cxa_demangle(typeid(variable).name(), 0, 0, &status); \
+	std::cout << AT << ": "						\
+		  << "dump: "						\
+		  << realname << " "					\
+		  << #variable    << " = "				\
+		  << '[' << variable << ']' << "\n";			\
+	free(realname);							\
+} while (0)
 
-
+// landmark
+#define MARK() do {							\
+	std::cout << AT << ": "						\
+		  << "mark: "						\
+		  << __FUNCTION__ << "\n";				\
+} while (0)
 
 #endif /* __INFRA_DEBUGGING_H__ */

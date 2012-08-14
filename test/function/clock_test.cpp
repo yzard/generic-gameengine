@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include <infra/Profile.h>
 
 int main() {
@@ -13,8 +14,9 @@ int main() {
 	Clock::StructRdtsc s, e;
 	uint64_t d;
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 1000; i++) {
 		Clock::rdtsc(s);
+		sleep(1);
 		Clock::rdtsc(e);
 	
 		// see how many cycles rdtsc needs

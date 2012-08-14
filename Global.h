@@ -23,6 +23,8 @@
  */
 
 // memory barrier functions, used for lock free algorithm
+// this barrier is for preventing compiler from reordering
+// instructions, this do not prevent reordering of CPU
 #if defined(__linux__)
 	// if it's linux
 #	define barrier() 	__asm__ __volatile__("": : :"memory")

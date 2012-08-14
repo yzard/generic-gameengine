@@ -1,7 +1,7 @@
 #ifndef __INFRA_QUEUE_H__
 #define __INFRA_QUEUE_H__
 
-#include <infra/Global.h>
+#include <Global.h>
 #include <cstring>
 #include <cmath>
 #include <stdint.h>
