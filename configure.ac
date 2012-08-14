@@ -58,8 +58,10 @@ AM_CONDITIONAL([ENABLE_CLOCK_GETTIME], [test x$has_clock_gettime = xtrue])
 AC_CONFIG_FILES([
 	Makefile
 	libinfra/Makefile
+	libstate/Makefile
 	test/Makefile
 	test/function/Makefile
+	test/performance/Makefile
 	test/unit/Makefile
 ])
 AC_OUTPUT
