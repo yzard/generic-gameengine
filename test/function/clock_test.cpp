@@ -18,7 +18,7 @@ int main() {
 		Clock::rdtsc(e);
 	
 		// see how many cycles rdtsc needs
-		d = (e.high << 32 | e.low) - (s.high << 32 | s.low);
+		d = e.cycles - s.cycles;
 	
 		std::cout << d << std::endl;
 	}
