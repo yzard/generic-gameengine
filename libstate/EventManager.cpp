@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-//#include <state/MaskMessageEvent.h>
+#include <state/MaskMessageEvent.h>
 
 EventManager* EventManager::instance_ = NULL;
 EventManager* EventManager::instance() {
@@ -18,17 +18,21 @@ void EventManager::destroy() {
 		delete instance_;
 }
 
-// non-static members
+template <typename T>
+IEvent* EventManager::typeCreator(const std::string& name) {
+	return new T(name);	
+}
 
+// non-static members
 EventManager::EventManager() {
-//#define REGISTER_EVENT_TYPE(TYPE) \
-	mapNameToEventTypes_[##TYPE] = &typeCreator<TYPE>;
+#define REGISTER_EVENT_TYPE(TYPE) \
+	mapNameToEventTypes_[#TYPE] = &typeCreator<TYPE>();
 
 	// register event type
 	// 1. should have header file
 	// 2. should derived from class IEvent
 	// 3. the constructor should only have one parameter std::string
-//	REGISTER_EVENT_TYPE(MaskMessageType);
+	REGISTER_EVENT_TYPE(MaskMessageEvent);
 }
 
 EventManager::~EventManager() {
@@ -75,7 +79,4 @@ void EventManager::deleteEvent(const std::string& name) {
 	return;
 }
 
-template <typename T>
-IEvent* EventManager::typeCreator(const std::string& name) {
-	return new T(name);	
-}
+
