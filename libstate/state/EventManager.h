@@ -26,10 +26,10 @@ private:
 	typedef std::map<std::string, IEvent*> NameToEventMap;
 	typedef NameToEventMap::iterator NameToEventMapIterator;
 
+	template <typename T> IEvent* typeCreator(const std::string& name);
+
 	NameToTypeMap mapNameToEventTypes_;
 	NameToEventMap mapNameToEvents_;
-	
-	template <typename T> IEvent* typeCreator(const std::string& name);
 };
 
 #endif // EVENTMANAGER_H

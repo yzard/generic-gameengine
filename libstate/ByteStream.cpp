@@ -1,7 +1,8 @@
+// vim: tabstop=8 shiftwidth=8 noexpandtab
+#include <Global.h>
 #include <state/ByteStream.h>
 
 #include <cmath>
-
 
 ByteStream::ByteStream()
 	: in_(0)
@@ -24,7 +25,7 @@ bool ByteStream::empty() {
 }
 
 void ByteStream::realloc(size_t newSize) {
-	size_t capacity = 1UL << (uint32_t)log((double)(newSize) + 1);
+	size_t capacity = 1UL << (uint32_t)log2((double)(newSize) + 1);
 
 	// assert(out_ <= in_)
 	char* newBuffer = new char[capacity];
@@ -54,6 +55,9 @@ void ByteStream::realloc(size_t newSize) {
 
 	delete buffer_;
 	return;
+}
+
+void ByteStream::copyTo(char* buffer) {
 }
 
 void ByteStream::input(const char* pointer, size_t len) {
@@ -103,7 +107,7 @@ ByteStream& operator<<(ByteStream& bs, const char* value) {
 	return bs;
 }
 
-ByteStream& operator<<(ByteStream& bs, std::string& value) {
+ByteStream& operator<<(ByteStream& bs, const std::string& value) {
 	size_t size = value.size();
 	bs.input((const char*)&size, sizeof(size_t));
 	bs.input(value.c_str(), size);
@@ -133,10 +137,9 @@ ByteStream& operator>>(ByteStream& bs, unsigned long& value) {
 ByteStream& operator>>(ByteStream& bs, char* value) {
 	size_t size;
 	bs.output((char*)&size, sizeof(size_t));
-	char buf[size+1];
-	bs.output((char*)&buf, size);
-	buf[size] = '\0';
-	value = std::string(buf);
+	value = new char[size+1];
+	bs.output(value, size);
+	value[size] = '\0';
 	return bs;
 }
 
@@ -146,7 +149,7 @@ ByteStream& operator>>(ByteStream& bs, std::string& value) {
 	char buf[size+1];
 	bs.output((char*)&buf, size);
 	buf[size] = '\0';
-	value = std::string(buf);
+	value = buf;
 	return bs;
 }
 
@@ -158,7 +161,7 @@ std::ostream& operator<<(std::ostream& os, const ByteStream& rhs) {
 	uint32_t in = rhs.in_ & (rhs.capacity_ - 1);
 	uint32_t out = rhs.out_ & (rhs.capacity_ - 1);
 
-	os << std::hex << std:;uppercase;
+	os << std::hex << std::uppercase;
 	if (out < in) {
 		for (uint32_t i = out; i < (in - out); ++i) {
 			unsigned char chr = (rhs.buffer_)[i];
@@ -166,7 +169,7 @@ std::ostream& operator<<(std::ostream& os, const ByteStream& rhs) {
 		}
 	}
 	else {
-		for (uint32_t i = out; i < (rhs.capactiy_ - in); ++i) {
+		for (uint32_t i = out; i < (rhs.capacity_ - in); ++i) {
 			unsigned char  chr = (rhs.buffer_)[i];
 			os << (int)chr << " ";
 		}

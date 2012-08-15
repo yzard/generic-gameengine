@@ -4,7 +4,9 @@ ACLOCAL_AMFLAGS = -I m4
 
 gameenginedir = $(includedir)
 
-gameengine_HEADERS = config.h
+gameengine_HEADERS =		\
+Global.h			\
+config.h
 
 SUBDIRS =			\
 libinfra			\
