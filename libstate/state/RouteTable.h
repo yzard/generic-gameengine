@@ -16,7 +16,7 @@ public:
 	static void destroy();
 	virtual ~RouteTable();
 
-	virtual bool addRoute(const Route& route, IValidator* validator);
+	virtual bool addRoute(const Route& route, IValidator* validator = 0);
 	virtual bool delRoute(const Route& route);
 
 	virtual IValidator* getValidator(const Route& route);

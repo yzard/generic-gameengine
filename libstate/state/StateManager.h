@@ -6,6 +6,8 @@
 #include <map>
 
 class State;
+class IActioner;
+class ICaster;
 
 class StateManager {
 public:
@@ -13,8 +15,8 @@ public:
 	static void destroy();
 	virtual ~StateManager();
 
-	State* createState(const std::string& name, IActioner* actioner = 0,
-		ICaster* caster = 0);
+	State* createState(const std::string& name, ICaster* caster = 0,
+		IActioner* actioner = 0);
 	void deleteState(const std::string& name);
 
 	State* getState(const std::string& name);

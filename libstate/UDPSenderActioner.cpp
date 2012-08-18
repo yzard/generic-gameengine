@@ -30,16 +30,11 @@ bool UDPSenderActioner::connect() {
 	return true;
 }
 
-bool UDPSenderActioner::send(const char* buffer, size_t size,
-	char delimiter) const {
-	size_t newSize = size + sizeof(delimiter);
-	char newBuffer[newSize];
+bool UDPSenderActioner::send(const char* buffer, size_t size) const {
+	socklen_t addrSize = sizeof(address_);
 
-	memcpy(&newBuffer[0], &buffer, size);
-	memcpy(&newBuffer[size], &delimiter, sizeof(delimiter));
-
-	if result = sendto(socket_, &newBuffer, newSize, 0,
-		(const sockaddr*)&address_, sizeof(address_));
+	int result = sendto(socket_, &buffer, size, 0,
+		(const sockaddr*)&address_, addrSize);
 
 	if (result == -1) {
 		perror("sendto");
@@ -60,16 +55,30 @@ bool UDPSenderActioner::assignAddress(const std::string& host, uint16_t port) {
 	return true;
 }
 
-void UDPSenderActioner::act(IEvent* event) {
+bool UDPSenderActioner::act(IEvent* event) {
 	if (!connect())
-		return;
+		return false;
 
-	char delimiter = 0x01;
+	char delimiter = 0xFF;
 	ByteStream bs;
+
+	// record type first
+	bs << event->type();
+
+	// serialize data
 	event->serializeTo(bs);
 
+	// append delimiter at the end
+	bs << delimiter;
+
+	// create buffer
 	char buf[bs.size()];
+
+	// copy stream content to buffer
 	bs.copyTo(&buf[0]);
 
-	send(&buf, bs.size(), delimiter);
+	// send
+	send(&buf[0], bs.size());
+
+	return true;
 }

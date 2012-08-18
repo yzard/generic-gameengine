@@ -12,7 +12,6 @@ public:
 	SingleCaster();
 	~SingleCaster();
 
-	// public methods
 	virtual bool cast(const State* fromState, IEvent* event);
 };
 

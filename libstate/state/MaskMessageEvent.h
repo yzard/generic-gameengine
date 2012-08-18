@@ -9,9 +9,9 @@
 
 class ByteStream;
 
-class MaskMessageEvent : public IEvent, ISerializable {
+class MaskMessageEvent : public IEvent {
 public:
-	MaskMessageEvent();
+	MaskMessageEvent(const std::string& name);
 	virtual ~MaskMessageEvent();
 
 	std::string mask();
@@ -21,9 +21,9 @@ public:
 	uint32_t position();
 	void setPosition(uint32_t);
 
-	// public methods
+	// interface ISerializable
+	virtual void serializeTo(ByteStream& bs);
 	virtual void deserializeFrom(ByteStream& bs);
-	virtual void deserializeTo(ByteStream& bs);
 
 private:
 	uint32_t	position_;	

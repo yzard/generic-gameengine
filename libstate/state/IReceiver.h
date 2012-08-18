@@ -6,7 +6,7 @@ class IEvent;
 
 class IReceiver {
 public:
-	virtual void onReceived(IEvent* event) = 0;
+	virtual void onReceive(IEvent* event) = 0;
 };
 
 #endif // IRECEIVER_H

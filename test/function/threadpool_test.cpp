@@ -1,7 +1,8 @@
-#include <signal.h>
+#include <Debugging.h>
 #include <infra/ThreadPool.h>
 #include <infra/ExampleTask.h>
-#include <infra/Debugging.h>
+
+#include <signal.h>
 
 void signalHandler(int sig) {
 	ThreadPool* pool = ThreadPool::Instance();

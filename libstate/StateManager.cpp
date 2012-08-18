@@ -1,7 +1,9 @@
 // vim: tabstop=8 shiftwidth=8 noexpandtab
 #include <state/StateManager.h>
+#include <state/State.h>
 
 #include <iostream>
+#include <map>
 
 // static members
 StateManager* StateManager::instance_ = NULL;
@@ -22,7 +24,7 @@ StateManager::StateManager() {
 }
 
 StateManager::~StateManager() {
-	map<std::string, State*>::iterator it;
+	std::map<std::string, State*>::iterator it;
 
 	for (it = mapStateNameToState_.begin();
 		it != mapStateNameToState_.end(); ++it) {
@@ -30,9 +32,10 @@ StateManager::~StateManager() {
 	}
 }
 
-State* StateManager::createState(const std::string& name,
-	IActioner* actioner, ICaster caster) {
-	map<std::string, State*>::iterator it = mapStateNameToState_.find(name);
+State* StateManager::createState(const std::string& name, ICaster* caster,
+	IActioner* actioner) {
+	std::map<std::string, State*>::iterator it =
+		mapStateNameToState_.find(name);
 	if (it != mapStateNameToState_.end()) {
 		std::cout << "StateManager::createSate: state \"" << name
 			<< "\" already exists" << std::endl;
@@ -45,7 +48,8 @@ State* StateManager::createState(const std::string& name,
 }
 
 void StateManager::deleteState(const std::string& name) {
-	map<std::string, State*>::iterator it = mapStateNameToState_.find(name);
+	std::map<std::string, State*>::iterator it =
+		mapStateNameToState_.find(name);
 	if (it == mapStateNameToState_.end()) {
 		std::cout << "StateManager::delete: state \"" << name
 			<< "\" doesn't exists" << std::endl;
@@ -58,7 +62,8 @@ void StateManager::deleteState(const std::string& name) {
 }
 
 State* StateManager::getState(const std::string&  name) {
-	map<std::string, State*>::iterator it = mapStateNameToState_.find(name);
+	std::map<std::string, State*>::iterator it =
+		mapStateNameToState_.find(name);
 	if (it == mapStateNameToState_.end()) {
 		std::cout << "StateManager::getState: state \"" << name
 			<< "\" doesn't exists" << std::endl;

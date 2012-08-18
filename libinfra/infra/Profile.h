@@ -53,11 +53,7 @@ inline void rdtsc(StructRdtsc& record) {
 	//	"rdtscp"
 	//	: "=A" (record.cycles), "=c" (record.id));
 
-<<<<<<< HEAD
-	__asm__ __volatile__("rdtsc" : "=A" (record.cycles) );
-=======
-	__asm__ __volatile__("rdtsc" : "=A" (record.count));
->>>>>>> 39c2024bbc1677881a7855310ef198989b01442a
+	__asm__ __volatile__("rdtsc" : "=A" (record.cycles));
 }
 #else
 #	error Need add rdtsc() support for this compiler.

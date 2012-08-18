@@ -1,33 +1,34 @@
 #include <state/MaskMessageEvent.h>
 #include <state/ByteStream.h>
 
-MaskMessageEvent::MaskMessageEvent() {
+MaskMessageEvent::MaskMessageEvent(const std::string& name)
+	: IEvent(name, "MaskMessageEvent") {
 }
 
 MaskMessageEvent::~MaskMessageEvent() {
 }
 
-std::string mask() {
+std::string MaskMessageEvent::mask() {
 	return mask_;
 }
 
-void setMask(const std::string& mask) {
+void MaskMessageEvent::setMask(const std::string& mask) {
 	mask_ = mask;
 }
 
-std::string message() {
+std::string MaskMessageEvent::message() {
 	return message_;
 }
 
-void setMessage(const std::string& message) {
+void MaskMessageEvent::setMessage(const std::string& message) {
 	message_ = message;
 }
 
-uint32_t position() {
+uint32_t MaskMessageEvent::position() {
 	return position_;
 }
 
-void setPosition(uint32_t position) {
+void MaskMessageEvent::setPosition(uint32_t position) {
 	position_ = position;
 }
 

@@ -26,7 +26,9 @@ IEvent* EventManager::typeCreator(const std::string& name) {
 // non-static members
 EventManager::EventManager() {
 #define REGISTER_EVENT_TYPE(TYPE) \
-	mapNameToEventTypes_[#TYPE] = &typeCreator<TYPE>();
+do {	\
+	mapNameToEventTypes_[#TYPE] = &typeCreator<TYPE>; \
+} while (0)
 
 	// register event type
 	// 1. should have header file
@@ -78,5 +80,4 @@ void EventManager::deleteEvent(const std::string& name) {
 	delete eventIt->second;
 	return;
 }
-
 

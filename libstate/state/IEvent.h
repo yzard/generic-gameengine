@@ -1,19 +1,26 @@
 #ifndef IEVENT_H
 #define IEVENT_H
 
-class IEvent {
+#include <state/ISerializable.h>
+
+#include <string>
+
+class ByteStream;
+
+class IEvent : public ISerializable {
 public:
-	IEvent();
+	IEvent(const std::string& name, const std::string& type);
 	~IEvent();
 
-	// public methods
+	virtual void serializeTo(ByteStream& bs) = 0;
+	virtual void deserializeFrom(ByteStream& bs) = 0;
+
+	std::string name() const;
+	std::string type() const;
 
 protected:
-	// protected methods
-
-private:
-	// member variables
-
+	std::string name_;
+	std::string type_;
 };
 
 #endif // IEVENT_H
