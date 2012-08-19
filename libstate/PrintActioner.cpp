@@ -11,6 +11,7 @@ PrintActioner::~PrintActioner() {
 }
 
 bool PrintActioner::act(IEvent* event) {
-	std::cout << "Name: " << event->name() << " Type: " << event->type();
+	std::cout << "Name: " << event->name() << " Type: " << event->type() <<
+		std::endl;
 }
 

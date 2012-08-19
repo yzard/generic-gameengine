@@ -1,5 +1,6 @@
 // vim: tabstop=8 shiftwidth=8 noexpandtab
 #include <Global.h>
+#include <Debugging.h>
 #include <state/ByteStream.h>
 
 #include <cmath>
@@ -20,14 +21,18 @@ uint32_t ByteStream::size() {
 	return in_ - out_;
 }
 
+uint32_t ByteStream::capacity() {
+	return capacity_;
+}
+
 bool ByteStream::empty() {
 	return (in_ == out_);
 }
 
 void ByteStream::realloc(size_t newSize) {
-	size_t capacity = 1UL << (uint32_t)log2((double)(newSize) + 1);
+	size_t capacity = 1UL << (uint32_t)log2((double)(newSize)) + 1;
 
-	// assert(out_ <= in_)
+	//assert(out_ <= in_)
 	char* newBuffer = new char[capacity];
 	if (!buffer_) {
 		buffer_		= newBuffer;
@@ -37,27 +42,40 @@ void ByteStream::realloc(size_t newSize) {
 		return;
 	}
 
-	uint32_t in = in_ & (capacity -1);
-	uint32_t out = out_ & (capacity -1);
+	// copy raw to new buffer
+	copyRaw(newBuffer);
 
-	if (out < in) {
-		memcpy(newBuffer, buffer_ + in, in - out);
-	}
-	else {
-		memcpy(newBuffer, buffer_ + out, capacity_ - out);
-		memcpy(newBuffer + (capacity_ - out), buffer_, in + 1);
-	}
+	// free old buffer_
+	delete buffer_;
 
+	// assign new buffer
 	buffer_ 	= newBuffer;
 	capacity_	= capacity;
-	in_		= out_ - in_;
+	in_		= in_ - out_;
 	out_		= 0;
 
-	delete buffer_;
 	return;
 }
 
-void ByteStream::copyTo(char* buffer) {
+void ByteStream::copyTo(char* buffer, size_t len) {
+	if (len < size())
+		return;
+
+	// copy raw to new buffer
+	copyRaw(buffer);
+}
+
+void ByteStream::copyRaw(char* buffer) {
+	uint32_t in = in_ & (capacity_ -1);
+	uint32_t out = out_ & (capacity_ -1);
+
+	if (out < in) {
+		memcpy(buffer, buffer_ + out, in - out);
+	}
+	else {
+		memcpy(buffer, buffer_ + out, capacity_ - out);
+		memcpy(buffer + (capacity_ - out), buffer_, in + 1);
+	}
 }
 
 void ByteStream::input(const char* pointer, size_t len) {
@@ -78,6 +96,11 @@ void ByteStream::output(char* pointer, size_t len) {
 	memcpy(pointer, buffer_ + (out_ & (capacity_ -1)), l);
 	memcpy(pointer + l, buffer_, len - l);
 	out_ += len;
+}
+
+ByteStream& operator<<(ByteStream& bs, char value) {
+	bs.input((const char*)&value, sizeof(value));
+	return bs;
 }
 
 ByteStream& operator<<(ByteStream& bs, int value) {
@@ -101,16 +124,21 @@ ByteStream& operator<<(ByteStream& bs, unsigned long value) {
 }
 
 ByteStream& operator<<(ByteStream& bs, const char* value) {
-	size_t size = strlen(value);
-	bs.input((const char*)&size, sizeof(size_t));
+	uint32_t size = strlen(value);
+	bs.input((const char*)&size, sizeof(uint32_t));
 	bs.input(value, size);
 	return bs;
 }
 
 ByteStream& operator<<(ByteStream& bs, const std::string& value) {
-	size_t size = value.size();
-	bs.input((const char*)&size, sizeof(size_t));
+	uint32_t size = value.size();
+	bs.input((const char*)&size, sizeof(uint32_t));
 	bs.input(value.c_str(), size);
+	return bs;
+}
+
+ByteStream& operator>>(ByteStream& bs, char& value) {
+	bs.output((char*)&value, sizeof(value));
 	return bs;
 }
 
@@ -135,8 +163,8 @@ ByteStream& operator>>(ByteStream& bs, unsigned long& value) {
 }
 
 ByteStream& operator>>(ByteStream& bs, char* value) {
-	size_t size;
-	bs.output((char*)&size, sizeof(size_t));
+	uint32_t size;
+	bs.output((char*)&size, sizeof(uint32_t));
 	value = new char[size+1];
 	bs.output(value, size);
 	value[size] = '\0';
@@ -144,8 +172,8 @@ ByteStream& operator>>(ByteStream& bs, char* value) {
 }
 
 ByteStream& operator>>(ByteStream& bs, std::string& value) {
-	size_t size;
-	bs.output((char*)&size, sizeof(size_t));
+	uint32_t size;
+	bs.output((char*)&size, sizeof(uint32_t));
 	char buf[size+1];
 	bs.output((char*)&buf, size);
 	buf[size] = '\0';

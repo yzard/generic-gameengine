@@ -7,7 +7,7 @@
 class IEvent;
 class State;
 
-class BroadCaster : ICaster {
+class BroadCaster : public ICaster {
 public:
 	BroadCaster();
 	virtual ~BroadCaster();

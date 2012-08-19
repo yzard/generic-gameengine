@@ -2,7 +2,6 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <state/MaskMessageEvent.h>
 #include <state/EventManager.h>
 #include <state/Route.h>
 #include <state/RouteTable.h>
@@ -14,8 +13,7 @@
 #include <state/BroadCaster.h>
 #include <state/ByteStream.h>
 #include <state/PrintActioner.h>
-#include <state/UDPSenderActioner.h>
-
+#include <state/UDPReceiverState.h>
 
 void usage(const char* program) {
 	std::cout << "usage: " << program << " <options>"	<< std::endl;
@@ -50,41 +48,15 @@ int main(int argc, char* argv[]) {
 
 	// actioners
 	static PrintActioner printActioner;
-	static UDPSenderActioner udpSenderActioner("127.0.0.1", 1025);
 
 	// casters
 	static SingleCaster 	singleCaster;
 	static MultiCaster 	multiCaster;
 	static BroadCaster 	broadCaster;
 
-	// states
-	State* A = manager->createState("A", &singleCaster);
-	State* B = manager->createState("B", &multiCaster);
-	State* C = manager->createState("C", &multiCaster);
-	State* D = manager->createState("D", &multiCaster);
-	State* E = manager->createState("E", &broadCaster, &printActioner);
-	State* F = manager->createState("F", 0, &udpSenderActioner);
+	static UDPReceiverState udpReceiverState("127.0.0.1", 1025);
 
-	// route table
-	routeTable->addRoute(Route(A, B));
-	routeTable->addRoute(Route(B, C));
-	routeTable->addRoute(Route(C, D));
-	routeTable->addRoute(Route(D, E));
-	routeTable->addRoute(Route(D, F));
-
-	IEvent* ptr = eventManager->createEvent("foobar", "MaskMessageEvent");
-	MaskMessageEvent* event = dynamic_cast<MaskMessageEvent*>(ptr);
-	if (!event) {
-		std::cout << "dynamic cast failed!" << std::endl;
-		return EXIT_FAILURE;
-	}
-	event->setMask("foo");
-	event->setMessage("This is stupid");
-
-	for (;;) {
-		sleep(1);
-		A->onReceive(event);
-	}
+	udpReceiverState.listen();
 
 	// destroy
 	RouteTable::destroy();

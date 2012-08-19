@@ -11,10 +11,12 @@ public:
 	ByteStream();
 	virtual ~ByteStream();
 
+	uint32_t capacity();
 	uint32_t size();
 	bool empty();
-	void copyTo(char* buffer);
+	void copyTo(char* buffer, size_t len);
 
+	friend ByteStream& operator<<(ByteStream& bs, char value);
 	friend ByteStream& operator<<(ByteStream& bs, int value);
 	friend ByteStream& operator<<(ByteStream& bs, unsigned int value);
 	friend ByteStream& operator<<(ByteStream& bs, long value);
@@ -22,6 +24,7 @@ public:
 	friend ByteStream& operator<<(ByteStream& bs, const char* value);
 	friend ByteStream& operator<<(ByteStream& bs, const std::string& value);
 
+	friend ByteStream& operator>>(ByteStream& bs, char& value);
 	friend ByteStream& operator>>(ByteStream& bs, int& value);
 	friend ByteStream& operator>>(ByteStream& bs, unsigned int& value);
 	friend ByteStream& operator>>(ByteStream& bs, long& value);
@@ -35,6 +38,7 @@ private:
 	void realloc(size_t newSize);
 	void input(const char* value, size_t len);
 	void output(char* value, size_t len);
+	void copyRaw(char* buffer);
 
 	uint32_t in_;
 	uint32_t out_;

@@ -18,7 +18,6 @@ UDPSenderActioner::~UDPSenderActioner() {
 
 bool UDPSenderActioner::connect() {
 	if (socket_ != -1) {
-		std::cout << "socket already opened" << std::endl;
 		return true;
 	}
 
@@ -36,7 +35,8 @@ bool UDPSenderActioner::send(const char* buffer, size_t size) const {
 	int result = sendto(socket_, &buffer, size, 0,
 		(const sockaddr*)&address_, addrSize);
 
-	if (result == -1) {
+	std::cout << size << std::endl;
+	if (result != size) {
 		perror("sendto");
 		return false;
 	}
@@ -67,7 +67,7 @@ bool UDPSenderActioner::act(IEvent* event) {
 
 	// serialize data
 	event->serializeTo(bs);
-
+	
 	// append delimiter at the end
 	bs << delimiter;
 
@@ -75,7 +75,7 @@ bool UDPSenderActioner::act(IEvent* event) {
 	char buf[bs.size()];
 
 	// copy stream content to buffer
-	bs.copyTo(&buf[0]);
+	bs.copyTo(&buf[0], bs.size());
 
 	// send
 	send(&buf[0], bs.size());

@@ -45,10 +45,7 @@ bool UDPReceiverState::listen() {
 }
 
 bool UDPReceiverState::receive(char* buffer, size_t size) {
-	for (int i = 0; i < size; ++i)
-		std::cout << buffer[i] << "|";
-	std::cout << std::endl;
-
+	std::cout << size << std::endl;
 	return true;
 }
 

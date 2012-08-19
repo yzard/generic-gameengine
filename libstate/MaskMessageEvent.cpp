@@ -2,7 +2,10 @@
 #include <state/ByteStream.h>
 
 MaskMessageEvent::MaskMessageEvent(const std::string& name)
-	: IEvent(name, "MaskMessageEvent") {
+	: IEvent(name, "MaskMessageEvent")
+	, position_(0)
+	, mask_()
+	, message_() {
 }
 
 MaskMessageEvent::~MaskMessageEvent() {
@@ -33,9 +36,9 @@ void MaskMessageEvent::setPosition(uint32_t position) {
 }
 
 void MaskMessageEvent::serializeTo(ByteStream& bs) {
-	//bs << position_ << mask_ << message_;
+	bs << position_ << mask_ << message_;
 }
 
 void MaskMessageEvent::deserializeFrom(ByteStream& bs) {
-	// bs >> position_ >> mask_ >> message_;
+	bs >> position_ >> mask_ >> message_;
 }
